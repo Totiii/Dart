@@ -1,4 +1,5 @@
 const app = require('express').Router();
+const Game = require('../models/Game')
 
 const dartDb = {
     player: [
@@ -121,7 +122,6 @@ app.get('/new', (req, res, next) => {
 
 app.post('/', function(req, res) {
     var id = req.body.id;
-
     var today = new Date();
     var dd = String(today.getDate()).padStart(2, '0');
     var mm = String(today.getMonth() + 1).padStart(2, '0'); //January is 0!
@@ -138,9 +138,10 @@ app.post('/', function(req, res) {
             var mode = req.body.mode;
             id = dartDb.player.length + 1;
 
-            dartDb.player.push({id, name, mode, Draft, today});
+            Game.add(id, name, mode, 'Draft', today);
+            dartDb.game.push({id, name, mode, today});
 
-            res.send(dartDb.player);
+            res.send(dartDb.game);
         }
     })
 });

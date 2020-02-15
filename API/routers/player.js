@@ -1,5 +1,5 @@
 const app = require('express').Router();
-
+const Player = require('../models/Player')
 var bodyParser = require('body-parser');
 app.use(bodyParser.json()); // support json encoded bodies
 app.use(bodyParser.urlencoded({ extended: true })); // support encoded bodies
@@ -67,7 +67,7 @@ const dartDb = {
         { id: 37, gameId: 0, playerId: 0, multiplicator: null, sector: 20, createdAt: '10/01/2020' },
     ],
 }
-
+/*
 app.get('/', (req, res, next) => {
     let limit = +req.query.limit;
     let page = +req.query.page;
@@ -109,6 +109,15 @@ app.get('/', (req, res, next) => {
             res.send(JSON.stringify(result))
         }
     })
+})*/
+
+app.get('/', function(req, res, next) {
+    let limit = parseInt(req.query.limit) || 20
+    let offset = parseInt(req.query.offset) || 0
+    if (limit > 100) limit = 100
+    test = Player.count()
+    console.log(test)
+    console.log(Player.count())
 })
 
 app.post('/', function(req, res) {
@@ -123,6 +132,8 @@ app.post('/', function(req, res) {
             var gameWin = req.body.gameWin;
             var gameLost = req.body.gameLost;
             var createdAt = req.body.createdAt;
+
+            Player.add(id, name, email, gameWin, gameLost, createdAt);
 
             dartDb.player.push({id, name, email, gameWin, gameLost, createdAt});
 
@@ -241,5 +252,7 @@ app.delete('/:id', (req, res, next) => {
         }
     })
 })
+
+
 
 module.exports = app;
