@@ -67,6 +67,26 @@ const dartDb = {
         { id: 37, gameId: 0, playerId: 0, multiplicator: null, sector: 20, createdAt: '10/01/2020' },
     ],
 }
+
+function getDateTime() {
+
+    var date = new Date();
+    var hour = date.getHours();
+    hour = (hour < 10 ? "0" : "") + hour;
+    var min  = date.getMinutes();
+    min = (min < 10 ? "0" : "") + min;
+    var sec  = date.getSeconds();
+    sec = (sec < 10 ? "0" : "") + sec;
+    var year = date.getFullYear();
+    var month = date.getMonth() + 1;
+    month = (month < 10 ? "0" : "") + month;
+    var day  = date.getDate();
+    day = (day < 10 ? "0" : "") + day;
+
+    return year + ":" + month + ":" + day + ":" + hour + ":" + min + ":" + sec;
+
+}
+
 /*
 app.get('/', (req, res, next) => {
     let limit = +req.query.limit;
@@ -111,35 +131,50 @@ app.get('/', (req, res, next) => {
     })
 })*/
 
-app.get('/', function(req, res, next) {
-    let limit = parseInt(req.query.limit) || 20
-    let offset = parseInt(req.query.offset) || 0
-    if (limit > 100) limit = 100
-    test = Player.count()
-    console.log(test)
-    console.log(Player.count())
+app.get('/', async (req, res, next) => {
+    let limit = parseInt(req.query.limit) || 10
+    //let page = parseInt(req.query.page) || 1  je comprend pas a quoi ça sert
+    let sort = req.query.sort || 'name'
+    let reverse = req.query.reverse || 'ASC'
+    if (limit > 20) limit = 20
+
+    Promise.all([
+        Player.getAll(limit, sort, reverse),
+    ]).then((results) => {
+        res.format({
+            html: () => {
+                res.render('players/player', {
+                    players: results[0],
+                })
+            },
+            json: () => {
+                res.send({
+                    Players: results[0],
+                })
+            }
+        })
+    }).catch(next)
 })
 
-app.post('/', function(req, res) {
-    var id = req.body.id;
-    res.format({
-        html: () => {
-            res.render('/'+id);
-        },
-        json: () => {
-            var name = req.body.name;
-            var email = req.body.email;
-            var gameWin = req.body.gameWin;
-            var gameLost = req.body.gameLost;
-            var createdAt = req.body.createdAt;
+app.post('/', function(req, res, next) {
+    var name = req.body.name;
+    var email = req.body.email;
+    Player.count().then((count) => {
+        createdAt = getDateTime();
+        id = count['count'] + 1;
+        Player.add(id, name, email, createdAt);
 
-            Player.add(id, name, email, gameWin, gameLost, createdAt);
-
-            dartDb.player.push({id, name, email, gameWin, gameLost, createdAt});
-
-            res.send(dartDb.player);
-        }
-    })
+        res.format({
+            html: () => { res.redirect('/'+id) },
+            json: () => {
+                Promise.all([
+                    Player.get(id),
+                ]).then((result) => {
+                    res.status(201).send(result);
+                }).catch(next)
+            }
+        })
+    }).catch(next)
 });
 
 app.get('/new', (req, res, next) => {
