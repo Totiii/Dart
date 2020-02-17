@@ -14,6 +14,12 @@ module.exports = {
     add: (id, name, email, createdAt) => {
         db.run("INSERT INTO Player (id, name, email, createdAt) VALUES(?,?,?,?)", [id, name, email, createdAt]);
     },
+    update: (id, name, email) => {
+        db.run('UPDATE Player SET name = ?, email = ? WHERE id = ?)', [name, email, id]);
+    },
+    delete: (id) => {
+        db.run('DELETE FROM Player WHERE id = ?)', id);
+    },
 
 
 

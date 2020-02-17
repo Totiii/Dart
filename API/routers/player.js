@@ -133,7 +133,7 @@ app.get('/', (req, res, next) => {
 
 app.get('/', async (req, res, next) => {
     let limit = parseInt(req.query.limit) || 10
-    //let page = parseInt(req.query.page) || 1  je comprend pas a quoi ça sert
+    //let page = parseInt(req.query.page) || 1  je comprend pas à quoi ça sert
     let sort = req.query.sort || 'name'
     let reverse = req.query.reverse || 'ASC'
     if (limit > 20) limit = 20
@@ -193,15 +193,19 @@ app.get('/:id', (req, res, next) => {
 
     if (id != req.params.id) throw new BadRequestError('Id should be a number');
 
-    const data = dartDb.player.find(player => player.id === id);
-    if (!data) throw new NotFoundError('User not found');
+    //const data = dartDb.player.find(player => player.id === id);
+    //if (!data) throw new NotFoundError('User not found');
 
     res.format({
         html: () => {
             res.redirect('/'+id+'/edit')
         },
         json: () => {
-            res.json({ data })
+            Promise.all([
+                Player.get(id),
+            ]).then((result) => {
+                res.status(201).send(result);
+            }).catch(next)
         }
     })
 })
@@ -226,16 +230,22 @@ app.patch('/:id', (req, res, next) => {
 
     const data = dartDb.player.find(player => player.id === id);
     if (!data) throw new NotFoundError('User not found');
-
     if(name) data.name = name;
     if(email) data.email = email;
+
+    //Player.update(id, name, email);
 
     res.format({
         html: () => {
             res.redirect('/')
         },
         json: () => {
-            res.json({ data })
+            res.send(data)
+           /* Promise.all([
+                Player.get(id),
+            ]).then((result) => {
+                res.send(result);
+            }).catch(next)*/
         }
     })
 })
