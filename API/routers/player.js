@@ -1,5 +1,7 @@
 const app = require('express').Router();
-const Player = require('../models/Player')
+const Player = require('../models/Player');
+const GamePlayer = require('../models/GamePlayer');
+const Game = require('../models/Game');
 var bodyParser = require('body-parser');
 app.use(bodyParser.json()); // support json encoded bodies
 app.use(bodyParser.urlencoded({ extended: true })); // support encoded bodies
@@ -228,34 +230,86 @@ app.patch('/:id', (req, res, next) => {
 
     if (id != req.params.id) throw new BadRequestError('Id should be a number');
 
-    const data = dartDb.player.find(player => player.id === id);
-    if (!data) throw new NotFoundError('User not found');
-    if(name) data.name = name;
-    if(email) data.email = email;
+    //const data = dartDb.player.find(player => player.id === id);
+    //if (!data) throw new NotFoundError('User not found');
+    //if(name) data.name = name;
+    //if(email) data.email = email;
 
-    //Player.update(id, name, email);
+    Promise.all([
+        Player.get(id),
+    ]).then((result) => {
+        if (result[0].length === 0) {
+            throw new NotFoundError('User not found');
+        }else{
+            Player.update(id, name, email);
+        }
+    }).catch(next);
 
     res.format({
         html: () => {
             res.redirect('/')
         },
         json: () => {
-            res.send(data)
-           /* Promise.all([
+            Promise.all([
                 Player.get(id),
             ]).then((result) => {
-                res.send(result);
-            }).catch(next)*/
+                res.status(201).send(result);
+            }).catch(next)
         }
     })
 })
 
-// not working - there is a bug in the else
 app.delete('/:id', (req, res, next) => {
     const id = +req.params.id;
 
     if (id != req.params.id) throw new BadRequestError('Id should be a number');
 
+    Promise.all([
+        Player.get(id),
+    ]).then((result) => {
+        if (result[0].length === 0) {
+            throw new NotFoundError('User not found');
+        }
+    }).catch(next)
+
+    Promise.all([
+        GamePlayer.getPlayers(id),
+    ]).then((result) => {
+        console.log(result[0].length)
+        if (result[0].length === 0){
+            Player.delete(id);
+            res.format({
+                html: () => {
+                    res.redirect('/')
+                },
+                json: () => {
+                    res.status(201).send('{"code":204}' );
+                }
+            })
+        }else {
+            Promise.all([
+                Game.getStatus(result[0][0]['gameId']),
+            ]).then( async (games) => {
+                for(i = 0; i < games.length; i++){
+                    if (games[i]['status'] == 'draft'){
+                        await Player.delete(id);
+                        res.format({
+                            html: () => {
+                                res.redirect('/')
+                            },
+                            json: () => {
+                                res.status(201).send('{"code":204}' );
+                            }
+                        })
+                    }else{
+                        throw new PlayerNotDeletable('Player is already in a game that is ended or started');
+                    }
+                }
+            }).catch(next);
+        }
+    }).catch(next);
+
+    /*
     const data = dartDb.player.find(player => player.id === id);
     if (!data) throw new NotFoundError('User not found');
 
@@ -288,16 +342,7 @@ app.delete('/:id', (req, res, next) => {
             throw new PlayerNotDeletable('Player is already in a game that is ended or started');
         }
     }
-    res.format({
-        html: () => {
-            res.redirect('/')
-        },
-        json: () => {
-            res.send(games);
-        }
-    })
+    */
 })
-
-
 
 module.exports = app;

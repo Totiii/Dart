@@ -33,8 +33,10 @@
                         <td><%= players[i].gameWin %></td>
                         <td><%= players[i].gameLost %></td>
                         <td><%= players[i].createdAt %></td>
-                        <td><a class="btn btn-success" href="./<%= players[i].id %>" >More</a></td>
-                        <td><button class="btn btn-danger">Delete</button></td>
+                        <td><a class="btn btn-success" href="./players/<%= players[i].id %>" >More</a></td>
+                        <form method='DELETE' action='./players/<%= players[i].id %>'>
+                            <td><button class="btn btn-danger" type="submit">Delete</button></td>
+                        </form>
                       </tr>
                       <% } %>
                    <% } %>

@@ -1,5 +1,7 @@
 const app = require('express').Router();
-const Game = require('../models/Game')
+const Game = require('../models/Game');
+const GamePlayer = require('../models/GamePlayer');
+const GameShot = require('../models/GameShot');
 
 const dartDb = {
     player: [
@@ -65,6 +67,130 @@ const dartDb = {
     ],
 }
 
+function getDateTime() {
+
+    var date = new Date();
+    var hour = date.getHours();
+    hour = (hour < 10 ? "0" : "") + hour;
+    var min  = date.getMinutes();
+    min = (min < 10 ? "0" : "") + min;
+    var sec  = date.getSeconds();
+    sec = (sec < 10 ? "0" : "") + sec;
+    var year = date.getFullYear();
+    var month = date.getMonth() + 1;
+    month = (month < 10 ? "0" : "") + month;
+    var day  = date.getDate();
+    day = (day < 10 ? "0" : "") + day;
+
+    return year + ":" + month + ":" + day + ":" + hour + ":" + min + ":" + sec;
+
+}
+
+app.get('/', async (req, res, next) => {
+    let limit = parseInt(req.query.limit) || 10
+    let status = req.query.status
+    let sort = req.query.sort || 'name'
+    let reverse = req.query.reverse || 'ASC'
+    if (limit > 20) limit = 20
+
+    Promise.all([
+        Game.getAll(limit, sort, reverse, status),
+    ]).then((results) => {
+        res.format({
+            html: () => {
+                res.render('games/game', {
+                    players: results[0],
+                })
+            },
+            json: () => {
+                res.send({
+                    Games: results[0],
+                })
+            }
+        })
+    }).catch(next)
+})
+
+app.get('/new', (req, res, next) => {
+    res.format({
+        html: () => {
+            res.render('games/new');
+        },
+        json: () => {
+            throw new NotApiAvailable()
+        }
+    })
+})
+
+app.post('/', function(req, res, next) {
+    var name = req.body.name;
+    var mode = req.body.mode;
+
+    if(mode === '301' || mode === 'around-the-world' || mode === 'cricket'){
+        Game.count().then((count) => {
+            createdAt = getDateTime();
+            id = count['count'] + 1;
+            status = 'draft';
+            Game.add(id, name, mode, status, createdAt);
+
+            res.format({
+                html: () => { res.redirect('/'+id) },
+                json: () => {
+                    Promise.all([
+                        Game.get(id),
+                    ]).then((result) => {
+                        res.status(201).send(result);
+                    }).catch(next)
+                }
+            })
+        }).catch(next)
+    }else{
+        throw new BadGamemode()
+    }
+
+});
+
+app.get('/:id', (req, res, next) => {
+    const id = +req.params.id;
+
+    if (id != req.params.id) throw new BadRequestError('Id should be a number');
+
+    res.format({
+        html: () => {
+            Promise.all([
+                Game.get(id),
+            ]).then((game) => {
+                Promise.all([
+                    GamePlayer.getAllGamePlayer(game[0]['id']),
+                ]).then((players) => {
+                    Promise.all([
+                        GamePlayer.getCurrentPlayer(game[0]['currentPlayerId']),
+                    ]).then((curentPlayer) => {
+                        Promise.all([
+                            GameShot.getLastShots(game[0]['id']),
+                        ]).then((lastShots) => {
+                            res.render('/'+id+'/players', {
+                                game: game[0],
+                                players: players[0],
+                                curentPlayer: curentPlayer[0],
+                                lastShots: lastShots[0],
+                            })
+                        }).catch(next);
+                    }).catch(next);
+                }).catch(next);
+            }).catch(next);
+        },
+        json: () => {
+            Promise.all([
+                Game.get(id),
+            ]).then((result) => {
+                res.status(201).send(result);
+            }).catch(next)
+        }
+    })
+})
+
+/*
 app.get('/', (req, res, next) => {
     let limit = +req.query.limit;
     let page = +req.query.page;
@@ -108,6 +234,7 @@ app.get('/', (req, res, next) => {
         }
     })
 })
+
 
 app.get('/new', (req, res, next) => {
     res.format({
@@ -179,5 +306,6 @@ app.get('/:id', (req, res, next) => {
         }
     })
 })
+*/
 
 module.exports = app;
