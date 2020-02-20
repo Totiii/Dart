@@ -2,6 +2,7 @@ const app = require('express').Router();
 const Game = require('../models/Game');
 const GamePlayer = require('../models/GamePlayer');
 const GameShot = require('../models/GameShot');
+const Player = require('../models/Player');
 
 const dartDb = {
     player: [
@@ -155,6 +156,8 @@ app.get('/:id', (req, res, next) => {
 
     if (id != req.params.id) throw new BadRequestError('Id should be a number');
 
+
+
     res.format({
         html: () => {
             Promise.all([
@@ -165,16 +168,32 @@ app.get('/:id', (req, res, next) => {
                 ]).then((players) => {
                     Promise.all([
                         GamePlayer.getCurrentPlayer(game[0]['currentPlayerId']),
-                    ]).then((curentPlayer) => {
+                    ]).then((currentPlayer) => {
                         Promise.all([
                             GameShot.getLastShots(game[0]['id']),
                         ]).then((lastShots) => {
-                            res.render('/'+id+'/players', {
-                                game: game[0],
-                                players: players[0],
-                                curentPlayer: curentPlayer[0],
-                                lastShots: lastShots[0],
-                            })
+                            Promise.all([
+                               Player.get(game[0]['currentPlayerId']),
+                            ]).then( async (currentPlayerProfile) => {
+                                allPlayersProfile = [];
+                                for (i=0; i < players.length + 1 ; i++){
+                                    await Promise.all([
+                                        Player.get(players[0][i]['playerId']),
+                                    ]).then(async (result) => {
+                                        await allPlayersProfile.push(result[0]);
+                                        if(i === players.length){
+                                            res.render('games/game', {
+                                                game: game[0],
+                                                players: players[0],
+                                                currentPlayer: currentPlayer[0],
+                                                currentPlayerProfile: currentPlayerProfile[0],
+                                                allPlayersProfile: allPlayersProfile,
+                                                lastShots: lastShots[0],
+                                            })
+                                        }
+                                    }).catch(next)
+                                }
+                            }).catch(next)
                         }).catch(next);
                     }).catch(next);
                 }).catch(next);

@@ -3,7 +3,7 @@ const db = require("sqlite")
 
 module.exports = {
     get: (userId) => {
-        return db.get('SELECT id, * FROM Player WHERE id = ?', userId) // Get userId
+        return db.get('SELECT id, * FROM Player WHERE id = ?', userId)
     },
     getAll: (limit, sort, reverse) => {
         return db.all('SELECT id, * FROM Player ORDER BY ?, ? LIMIT ?', [sort, reverse, limit])

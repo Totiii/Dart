@@ -24,8 +24,89 @@
             <% } %>
         </div>
     </div>
+    <div class='row mt-3 justify-content-center'>
+    <% if (currentPlayer) { %>
+        <div class="col-md-8 bg-light">
+            <div class="card text-center">
+              <div class="card-header">
+                Actual round
+              </div>
+              <div class="card-body">
+                <h5 class="card-title">Current Player : <% if (currentPlayerProfile) { %> <%= currentPlayerProfile.name %> <% } %> </h5>
+                <p class="card-text">Remaining Shots : <%= currentPlayer.remainingShots %></p>
+                <span class="badge badge-success"><% if (currentPlayerProfile) { %> <%= currentPlayerProfile.gameWin %> <% if (currentPlayerProfile.gameWin > 1 ) { %> Games Win <% }else{ %> Game Win <% } %> <% } %> </span>
+                <span class="badge badge-danger"><% if (currentPlayerProfile) { %> <%= currentPlayerProfile.gameLost %> <% if (currentPlayerProfile.gameLost > 1 ) { %> Games Lost <% }else{ %> Game Lost <% } %> <% } %></span>
+              </div>
+            </div>
+          </div>
+    <% } %>
+    </div>
     <div class='row mt-3'>
         <div class='col'>
+            <div class="alert alert-secondary text-center" role="alert">
+              Table of the game
+            </div>
+            <table class="table">
+              <thead class="thead-dark">
+                <tr>
+                <% if (game.mode == '301' || game.mode == 'cricket') { %>
+                  <th scope="col">Multiplicator</th>
+                 <% } %>
+                  <th scope="colgroup" colspan="26">Sector</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                <% if (game.mode == '301' || game.mode == 'cricket') { %>
+                  <th scope="row">1</th>
+                  <% for (i=0; i < 22 ; i++) { %>
+                      <% if (i === 21) { %>
+                        <td><a href="./25/shots">25</a></td>
+                      <% }else if (i === 0) { %>
+                        <td><a href='./<%= i %>/shots'> Target Missed </a></td>
+                      <% }else{ %>
+                        <td><a href='./<%= i %>/shots'> <%= i %> </a></td>
+                      <% } %>
+                  <% } %>
+                 <% }else{ %>
+                  <% for (i=0; i < 21 ; i++) { %>
+                    <td><a href='./<%= i %>/shots'> <%= i %> </a></td>
+                  <% } %>
+                 <% } %>
+                 </tr>
+                 <tr>
+                 <% if (game.mode == '301' || game.mode == 'cricket') { %>
+                   <th scope="row">2</th>
+                   <% for (i=0; i < 22 ; i++) { %>
+                     <% if (i === 21) { %>
+                       <td><a href="./25/shots">25</a></td>
+                       <% }else if (i === 0) { %>
+                         <td><a href='./<%= i %>/shots'> Target Missed </a></td>
+                       <% }else{ %>
+                        <td><a href='./<%= i %>/shots'> <%= i %> </a></td>
+                     <% } %>
+                    <% } %>
+                  </tr>
+                  <tr>
+                    <th scope="row">3</th>
+                    <% for (i=0; i < 21 ; i++) { %>
+                         <% if (i === 0) { %>
+                           <td><a href='./<%= i %>/shots'> Target Missed </a></td>
+                         <% }else{ %>
+                          <td><a href='./<%= i %>/shots'> <%= i %> </a></td>
+                         <% } %>
+                    <% } %>
+                   </tr>
+                 <% } %>
+              </tbody>
+            </table>
+        </div>
+    </div>
+    <div class='row mt-3'>
+        <div class='col'>
+            <div class="alert alert-secondary text-center" role="alert">
+              Players table
+            </div>
             <table class="table">
               <thead class="thead-dark">
                 <tr>
@@ -35,12 +116,37 @@
                 </tr>
               </thead>
               <tbody>
-                  <% if (players) { %>
-                      <% for (i=0; i < players.length; i++) { %>
+                  <% if (allPlayersProfile) { %>
+                      <% for (i=0; i < allPlayersProfile.length; i++) { %>
                       <tr>
-                        <th scope="row"><%= players[i].id %></th>
-                        <td><%= players[i].name %></td>
-                        <td><%= players[i].email %></td>
+                        <th scope="row"><%= allPlayersProfile[i].id %></th>
+                        <td><%= allPlayersProfile[i].name %></td>
+                        <td><%= allPlayersProfile[i].email %></td>
+                      </tr>
+                      <% } %>
+                   <% } %>
+              </tbody>
+            </table>
+        </div>
+        <div class='col'>
+            <div class="alert alert-secondary text-center" role="alert">
+              Latest shots
+            </div>
+            <table class="table">
+              <thead class="thead-dark">
+                <tr>
+                  <th scope="col">Player Id</th>
+                  <th scope="col">Multiplicator</th>
+                  <th scope="col">Sector</th>
+                </tr>
+              </thead>
+              <tbody>
+                  <% if (lastShots) { %>
+                      <% for (i=0; i < lastShots.length; i++) { %>
+                      <tr>
+                        <th scope="row"><%= lastShots[i].playerId %></th>
+                        <td><%= lastShots[i].multiplicator %></td>
+                        <td><%= lastShots[i].sector %></td>
                       </tr>
                       <% } %>
                    <% } %>
