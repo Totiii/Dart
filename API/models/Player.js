@@ -20,6 +20,9 @@ module.exports = {
     delete: (id) => {
         db.run('DELETE FROM Player WHERE id = ?', id);
     },
+    getAllPlayers: () => {
+        return db.all('SELECT * FROM Player')
+    }
 
 
 

@@ -212,7 +212,7 @@ app.get('/:id', (req, res, next) => {
     })
 })
 
-app.get('/:id/edit', (req, res, next) => {
+app.get('/:id/edit', (req, res) => {
     res.format({
         html: () => {
             res.render('players/new');

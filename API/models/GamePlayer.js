@@ -11,6 +11,12 @@ module.exports = {
     getCurrentPlayer: (playerId) => {
         return db.get('SELECT * FROM GamePlayer WHERE playerId = ?', playerId)
     },
+    addPlayer: (PlayerId, gameId, createdAt) => {
+        db.run("INSERT INTO GamePlayer (playerId, gameId, createdAt) VALUES(?,?,?)", [PlayerId, gameId, createdAt]);
+    },
+    count: () => {
+        return db.get("SELECT COUNT(*) as count FROM Game")
+    },
 
 
 

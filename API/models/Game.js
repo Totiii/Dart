@@ -17,6 +17,15 @@ module.exports = {
     getAll: (limit, sort, reverse, status) => {
         return db.all('SELECT id, * FROM Game ORDER BY ?, ?, ? LIMIT ?', [sort, reverse, status, limit]);
     },
+    updateStatus: (id, name, mode, status) => {
+        db.run("UPDATE Game SET name = ?, mode = ?, status = ? where id = ?", [name, mode, status, id]);
+    },
+    update: (id, name, mode) => {
+        db.run("UPDATE Game SET name = ?, mode = ? where id = ?", [name, mode, id]);
+    },
+    delete: (id) => {
+        db.run('DELETE FROM Game WHERE id = ?', id);
+    },
 
 
 
