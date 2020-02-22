@@ -6,7 +6,6 @@ class Game {
         this.players = players;
         this.sector = 20;
         this.win = false;
-        this.lose = false
     }
 
     pickRandomPlayer() {

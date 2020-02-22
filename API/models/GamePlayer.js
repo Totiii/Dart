@@ -17,6 +17,9 @@ module.exports = {
     count: () => {
         return db.get("SELECT COUNT(*) as count FROM Game")
     },
+    removePlayer: (gameId, playerId) => {
+        db.run('DELETE FROM GamePlayer WHERE gameId = ? AND playerId = ?', [gameId, playerId]);
+    },
 
 
 

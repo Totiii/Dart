@@ -16,4 +16,16 @@ app.get('/', (req, res, next) => {
 app.use('/games', gameRouter);
 app.use('/players', playerRouter);
 
+app.get('/favicon.ico', function(req, res) {
+    res.sendFile('/assets/favicon.ico')
+});
+
+app.get('/styles/main.css', function(req, res) {
+    res.sendFile('/assets/styles/main.css')
+});
+
+app.get('/images/logo.png', function(req, res) {
+    res.sendFile('/assets/images/logo.png')
+});
+
 module.exports = app;

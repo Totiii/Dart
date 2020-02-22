@@ -5,8 +5,11 @@ module.exports = {
     get: (gameId) => {
         return db.get('SELECT id, * FROM Game WHERE id = ?', gameId)
     },
-    add: (id, name, mode, status, createdAt) => {
-        db.run("INSERT INTO Game (id, name, mode, status, createdAt) VALUES(?,?,?,?,?)", [id, name, mode, status, createdAt]);
+    getbyname: (name, createdAt) => {
+        return db.get('SELECT id, * FROM Game WHERE name = ? AND createdAt = ?', [name, createdAt])
+    },
+    add: (name, mode, status, createdAt) => {
+        db.run("INSERT INTO Game (name, mode, status, createdAt) VALUES(?,?,?,?)", [name, mode, status, createdAt]);
     },
     count: () => {
         return db.get("SELECT COUNT(*) as count FROM Game")
