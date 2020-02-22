@@ -2,6 +2,10 @@ const app = require('express').Router();
 const Player = require('../models/Player');
 const GamePlayer = require('../models/GamePlayer');
 const Game = require('../models/Game');
+const NotApiAvailable = require('../errors/NotApiAvailable');
+const BadRequestError = require('../errors/BadRequestError');
+const NotFoundError = require('../errors/NotFoundError');
+const PlayerNotDeletable = require('../errors/PlayerNotDeletable');
 var bodyParser = require('body-parser');
 app.use(bodyParser.json()); // support json encoded bodies
 app.use(bodyParser.urlencoded({ extended: true })); // support encoded bodies
@@ -68,7 +72,7 @@ app.post('/', function(req, res, next) {
     })
 });
 
-app.get('/new', (req, res, next) => {
+app.get('/new', (req, res) => {
     res.format({
         html: () => {
             res.render('players/new');
@@ -189,41 +193,6 @@ app.delete('/:id', (req, res, next) => {
             }).catch(next);
         }
     }).catch(next);
-
-    /*
-    const data = dartDb.player.find(player => player.id === id);
-    if (!data) throw new NotFoundError('User not found');
-
-    playerGames = dartDb.gamePlayer.find(player => player.playerId === id);
-
-    let games = [];
-
-    if (!playerGames){
-        dartDb.player.splice(dartDb.player.indexOf(data),1);
-    }else {
-
-        for(pg = 0; pg < playerGames.length; pg++){
-            playerGame = playerGames[pg];
-            my_game = dartDb.game.find(game => game.id === playerGame.gameId);
-            games.push(my_game)
-        }
-
-        let impossible = 0;
-
-        for(g = 0; g < games.length; g++){
-            game = games[g];
-            if (game.status != 'draft'){
-                impossible += 1
-            }
-        }
-
-        if (impossible == 0){
-            dartDb.player.splice(dartDb.player.indexOf(data),1)
-        }else{
-            throw new PlayerNotDeletable('Player is already in a game that is ended or started');
-        }
-    }
-    */
 })
 
 module.exports = app;
