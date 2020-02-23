@@ -10,38 +10,18 @@
 <body>
 <div class="container mt-5">
     <h2>New Game</h2>
-    <form action="new.html">
+    <form action="/games" method="POST">
         <div class="form-group">
-            <label for="exampleInputEmail1">Id</label>
-            <input class="form-control" type="text" placeholder="Game Id">
-        </div>
-        <div class="form-group">
-            <label for="exampleFormControlSelect1">GameMode</label>
-            <select class="form-control" id="exampleFormControlSelect1">
+            <label>GameMode</label>
+            <select class="form-control" id="exampleFormControlSelect1" name="mode">
               <option>around-the-world</option>
               <option>301</option>
               <option>cricket</option>
             </select>
         </div>
         <div class="form-group">
-            <label for="exampleInputEmail1">Name</label>
-            <input class="form-control" type="text" placeholder="Name">
-        </div>
-        <div class="form-group">
-            <label for="exampleInputEmail1">Current Player Id</label>
-            <input class="form-control" type="text" placeholder="Current Player Id">
-        </div>
-        <div class="form-group">
-            <label for="exampleFormControlSelect1">Status</label>
-            <select class="form-control" id="exampleFormControlSelect1">
-              <option>Started</option>
-              <option>Ended</option>
-              <option>Draft</option>
-            </select>
-        </div>
-        <div class="form-group">
-            <label for="exampleInputEmail1">Created at</label>
-            <input class="form-control" type="date" placeholder="Created at">
+            <label>Name</label>
+            <input class="form-control" type="text" placeholder="Name" name="name">
         </div>
         <button type="submit" class="btn btn-primary">Submit</button>
     </form>

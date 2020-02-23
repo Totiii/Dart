@@ -1,6 +1,7 @@
 const app = require('express').Router();
 const gameRouter = require('./routers/game.js');
 const playerRouter = require('./routers/player.js');
+const NotApiAvailable = require('./errors/NotApiAvailable');
 
 app.get('/', (req, res, next) => {
     res.format({
@@ -11,7 +12,7 @@ app.get('/', (req, res, next) => {
             throw new NotApiAvailable()
         }
     })
-})
+});
 
 app.use('/games', gameRouter);
 app.use('/players', playerRouter);

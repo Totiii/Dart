@@ -26,22 +26,21 @@ function getDateTime() {
     day = (day < 10 ? "0" : "") + day;
 
     return year + ":" + month + ":" + day + ":" + hour + ":" + min + ":" + sec;
-
 }
 
 app.get('/', async (req, res, next) => {
-    let limit = parseInt(req.query.limit) || 10
-    let status = req.query.status
-    let sort = req.query.sort || 'name'
-    let reverse = req.query.reverse || 'ASC'
-    if (limit > 20) limit = 20
+    let limit = parseInt(req.query.limit) || 10;
+    let status = req.query.status;
+    let sort = req.query.sort || 'name';
+    let reverse = req.query.reverse || 'ASC';
+    if (limit > 20) limit = 20;
 
     Promise.all([
         Game.getAll(limit, sort, reverse, status),
     ]).then((results) => {
         res.format({
             html: () => {
-                res.render('games/game', {
+                res.render('games/games', {
                     Games: results[0],
                 })
             },
@@ -65,9 +64,14 @@ app.get('/new', (req, res, next) => {
     })
 })
 
-app.post('/', function(req, res, next) {
+app.post('/', (req, res, next) => {
     var name = req.body.name;
     var mode = req.body.mode;
+
+    console.log('dab')
+
+    console.log(mode)
+    console.log(name)
 
     if(mode === '301' || mode === 'around-the-world' || mode === 'cricket'){
         createdAt = getDateTime();
@@ -117,22 +121,33 @@ app.get('/:id', (req, res, next) => {
                                Player.get(game[0]['currentPlayerId']),
                             ]).then( async (currentPlayerProfile) => {
                                 allPlayersProfile = [];
-                                for (i=0; i < players.length + 1 ; i++){
-                                    await Promise.all([
-                                        Player.get(players[0][i]['playerId']),
-                                    ]).then((result) => {
-                                        allPlayersProfile.push(result[0]);
-                                        if(i === players.length){
-                                            res.render('games/game', {
-                                                game: game[0],
-                                                players: players[0],
-                                                currentPlayer: currentPlayer[0],
-                                                currentPlayerProfile: currentPlayerProfile[0],
-                                                allPlayersProfile: allPlayersProfile,
-                                                lastShots: lastShots[0],
-                                            })
-                                        }
-                                    }).catch(next)
+                                if (players[0].length === 0){
+                                    res.render('games/game', {
+                                        game: game[0],
+                                        players: players[0],
+                                        currentPlayer: currentPlayer[0],
+                                        currentPlayerProfile: currentPlayerProfile[0],
+                                        allPlayersProfile: allPlayersProfile,
+                                        lastShots: lastShots[0],
+                                    })
+                                }else{
+                                    for (i=0; i < players.length + 1 ; i++){
+                                        await Promise.all([
+                                            Player.get(players[0][i]['playerId']),
+                                        ]).then((result) => {
+                                            allPlayersProfile.push(result[0]);
+                                            if(i === players.length){
+                                                res.render('games/game', {
+                                                    game: game[0],
+                                                    players: players[0],
+                                                    currentPlayer: currentPlayer[0],
+                                                    currentPlayerProfile: currentPlayerProfile[0],
+                                                    allPlayersProfile: allPlayersProfile,
+                                                    lastShots: lastShots[0],
+                                                })
+                                            }
+                                        }).catch(next)
+                                    }
                                 }
                             }).catch(next)
                         }).catch(next);
@@ -243,7 +258,7 @@ app.get('/:id/players', (req, res, next) => {
 
     if (id != req.params.id) throw new BadRequestError('Id should be a number');
 
-    allPlayers = [];
+    allPlayersNotInGame = [];
 
     Promise.all([
         Game.get(id),
@@ -252,24 +267,55 @@ app.get('/:id/players', (req, res, next) => {
             GamePlayer.getAllGamePlayer(game[0]['id']),
         ]).then(async (players) => {
             inGamePlayers = [];
-            for (i=0; i < players.length + 1 ; i++){
+            if (players[0].length === 0){
                 await Promise.all([
-                    Player.get(players[0][i]['playerId']),
-                ]).then( async (result) => {
-                    await inGamePlayers.push(result[0]);
-                    if(i === players.length){
+                    Player.getAllPlayers(),
+                ]).then(async (allplayers) => {
+                    for (a=0; a < allplayers[0].length; a++){
+                        await allPlayersNotInGame.push(allplayers[0][a]);
+                    }
+                    res.format({
+                        html: () => {
+                            res.render('games/player', {
+                                game: game[0],
+                                inGamePlayers: inGamePlayers,
+                                allPlayers: allPlayersNotInGame,
+                            })
+                        },
+                        json: () => {
+                            res.status(201).send(inGamePlayers);
+                        }
+                    })
+                }).catch(next);
+            }else {
+                for (i=0; i < players[0].length; i++) {
+                    Promise.all([
+                        Player.get(players[0][i]['playerId']),
+                    ]).then(async (result) => {
+                        await inGamePlayers.push(result[0]);
                         Promise.all([
                             Player.getAllPlayers(),
                         ]).then(async (allplayers) => {
-                            for (i=0; i < allplayers.length + 1 ; i++){
-                                await allPlayers.push(allplayers[0][i]);
+                            for (a = 0; a < allplayers[0].length; a++) {
+                                await allPlayersNotInGame.push(allplayers[0][a]);
+                            }
+                            for (p = 0; p < allPlayersNotInGame.length; p++) {
+                                for (e = 0; e < inGamePlayers.length; e++) {
+                                    if (allPlayersNotInGame[p]['id'] === inGamePlayers[e]['id']) {
+                                        console.log(allPlayersNotInGame[p])
+                                        await allPlayersNotInGame.splice(p, 1)
+                                        console.log('Player in game ')
+                                    } else {
+                                        console.log("Player not in game ")
+                                    }
+                                }
                             }
                             res.format({
                                 html: () => {
                                     res.render('games/player', {
                                         game: game[0],
                                         inGamePlayers: inGamePlayers,
-                                        allPlayers: allPlayers,
+                                        allPlayers: allPlayersNotInGame,
                                     })
                                 },
                                 json: () => {
@@ -277,8 +323,8 @@ app.get('/:id/players', (req, res, next) => {
                                 }
                             })
                         }).catch(next);
-                    }
-                }).catch(next)
+                    }).catch(next);
+                }
             }
         }).catch(next)
     }).catch(next);
@@ -288,7 +334,16 @@ app.post('/:id/players', function(req, res, next) {
     const id = +req.params.id;
     const playerString = req.body.playerId;
 
-    playersArray = JSON.parse(playerString);
+    playersArray = [];
+
+    if (Array.isArray(playerString) === false){
+        playersArray.push(playerString);
+    }else{
+        playersArray = playerString;
+    }
+
+    console.log(playersArray)
+
     createdAt = getDateTime();
 
     if (id != req.params.id) throw new BadRequestError('Id should be a number');
@@ -307,7 +362,7 @@ app.post('/:id/players', function(req, res, next) {
 
     res.format({
         html: () => {
-            res.redirect('./'+id+'/players')
+            res.redirect('./players')
         },
         json: () => {
             res.status(201).send('{"code":204}' );

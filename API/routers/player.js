@@ -6,6 +6,7 @@ const NotApiAvailable = require('../errors/NotApiAvailable');
 const BadRequestError = require('../errors/BadRequestError');
 const NotFoundError = require('../errors/NotFoundError');
 const PlayerNotDeletable = require('../errors/PlayerNotDeletable');
+const InvalidFormat = require('../errors/InvalidFormat');
 var bodyParser = require('body-parser');
 app.use(bodyParser.json()); // support json encoded bodies
 app.use(bodyParser.urlencoded({ extended: true })); // support encoded bodies
@@ -26,7 +27,15 @@ function getDateTime() {
     day = (day < 10 ? "0" : "") + day;
 
     return year + ":" + month + ":" + day + ":" + hour + ":" + min + ":" + sec;
+}
 
+function ValidateEmail(mail)
+{
+    if (/^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/.test(mail))
+    {
+        return (true)
+    }
+    return (false)
 }
 
 app.get('/', async (req, res, next) => {
@@ -58,18 +67,24 @@ app.post('/', function(req, res, next) {
     var name = req.body.name;
     var email = req.body.email;
     createdAt = getDateTime();
-    Player.add(name, email, createdAt);
 
-    res.format({
-        html: () => { res.redirect('/'+id) },
-        json: () => {
-            Promise.all([
-                Player.getbyemail(email),
-            ]).then((result) => {
-                res.status(201).send(result);
-            }).catch(next)
-        }
-    })
+    if (ValidateEmail(email) === true){
+        Player.add(name, email, createdAt);
+        Promise.all([
+            Player.getbyemail(email, createdAt),
+        ]).then((result) => {
+            res.format({
+                html: () => { res.redirect('./players/'+result[0].id) },
+                json: () => {
+                    res.status(201).send(result);
+                }
+            })
+        }).catch(next)
+    }else{
+        throw new InvalidFormat('Bad email format')
+    }
+
+
 });
 
 app.get('/new', (req, res) => {
@@ -90,7 +105,7 @@ app.get('/:id', (req, res, next) => {
 
     res.format({
         html: () => {
-            res.redirect('/'+id+'/edit')
+            res.redirect('./'+id+'/edit')
         },
         json: () => {
             Promise.all([
@@ -120,36 +135,39 @@ app.patch('/:id', (req, res, next) => {
 
     if (id != req.params.id) throw new BadRequestError('Id should be a number');
 
-    Promise.all([
-        Player.get(id),
-    ]).then((result) => {
-        if (result[0].length === 0) {
-            throw new NotFoundError('User not found');
-        }else{
-            Player.update(id, name, email);
-        }
-    }).catch(next);
-
-    res.format({
-        html: () => {
-            res.redirect('./')
-        },
-        json: () => {
-            Promise.all([
-                Player.get(id),
-            ]).then((result) => {
-                res.status(201).send(result);
-            }).catch(next)
-        }
-    })
+    if (ValidateEmail(email) === true){
+        Promise.all([
+            Player.get(id),
+        ]).then(async (result) => {
+            if (result[0].length === 0) {
+                throw new NotFoundError('User not found');
+            }else{
+                await Player.update(id, name, email);
+                await res.format({
+                    html: () => {
+                        res.redirect('./')
+                    },
+                    json: () => {
+                        Promise.all([
+                            Player.get(id),
+                        ]).then((result) => {
+                            res.status(201).send(result);
+                        }).catch(next)
+                    }
+                })
+            }
+        }).catch(next);
+    }else{
+        throw new InvalidFormat('Bad email format')
+    }
 })
 
-app.delete('/:id', (req, res, next) => {
+app.delete('/:id', async (req, res, next) => {
     const id = +req.params.id;
 
     if (id != req.params.id) throw new BadRequestError('Id should be a number');
 
-    Promise.all([
+    await Promise.all([
         Player.get(id),
     ]).then((result) => {
         if (result[0].length === 0) {
@@ -157,7 +175,7 @@ app.delete('/:id', (req, res, next) => {
         }
     }).catch(next)
 
-    Promise.all([
+    await Promise.all([
         GamePlayer.getPlayers(id),
     ]).then((result) => {
         console.log(result[0].length)
@@ -165,7 +183,7 @@ app.delete('/:id', (req, res, next) => {
             Player.delete(id);
             res.format({
                 html: () => {
-                    res.redirect('/')
+                    res.redirect('./')
                 },
                 json: () => {
                     res.status(201).send('{"code":204}' );

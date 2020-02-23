@@ -5,8 +5,8 @@ module.exports = {
     get: (userId) => {
         return db.get('SELECT id, * FROM Player WHERE id = ?', userId)
     },
-    getbyemail: (email) => {
-        return db.get('SELECT id, * FROM Player WHERE email = ?', email)
+    getbyemail: (email, createdAt) => {
+        return db.get('SELECT id, * FROM Player WHERE email = ? AND createdAt = ?', [email, createdAt])
     },
     getAll: (limit, sort, reverse) => {
         return db.all('SELECT id, * FROM Player ORDER BY ?, ? LIMIT ?', [sort, reverse, limit])
