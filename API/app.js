@@ -3,6 +3,8 @@ const app = express();
 const db = require('sqlite');
 const routers = require('./router.js');
 var bodyParser = require('body-parser');
+const ServerError = require("./errors/ServerError");
+const HttpError = require('./errors/HttpError');
 app.use(bodyParser.json()); // support json encoded bodies
 app.use(bodyParser.urlencoded({ extended: true })); // support encoded bodies
 
@@ -11,6 +13,15 @@ app.use(express.static('assets'));
 app.set('view engine', 'ejs');
 
 app.use(routers);
+
+app.use((error, req, res, next) => {
+    if (!(error instanceof HttpError)) {
+        console.error(error)
+        error = new ServerError()
+    }
+
+    return res.status(error.status || 500).json({ error })
+})
 
 db.open('bdd.db').then( () => {
     Promise.all([

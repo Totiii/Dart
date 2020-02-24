@@ -43,7 +43,7 @@
                             <th scope="row"><%= inGamePlayers[i].id %></th>
                             <td><%= inGamePlayers[i].name %></td>
                             <td><%= inGamePlayers[i].email %></td>
-                            <td><button class="btn btn-danger delete" data-id="<%= inGamePlayers[i].id %>">Remove</button></td>
+                            <td><button class="btn btn-danger delete" data-id="<%= inGamePlayers[i].id %>" type="button">Remove</button></td>
                         </tr>
                     <% } %>
                 <% } %>
@@ -85,17 +85,16 @@
 </div>
 
 
-
-
 </body>
 <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js" integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous"></script>
 <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js" integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6" crossorigin="anonymous"></script>
 
 <script>
-    $('.delete').click(function() {
+    $('.delete').click(async function() {
         const player = $(this).data("id");
-        $.ajax({
-            url: '/games/<% if (game) { %><%= game.id %><% } %>/players',
+        location.reload();
+        await $.ajax({
+            url: '/games/<% if (game) { %><%= game.id %><% } %>/players?id=' + player,
             type: 'DELETE',
         })
     })

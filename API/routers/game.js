@@ -131,12 +131,12 @@ app.get('/:id', (req, res, next) => {
                                         lastShots: lastShots[0],
                                     })
                                 }else{
-                                    for (i=0; i < players.length + 1 ; i++){
+                                    for (i=0; i < players[0].length; i++){
                                         await Promise.all([
                                             Player.get(players[0][i]['playerId']),
                                         ]).then((result) => {
                                             allPlayersProfile.push(result[0]);
-                                            if(i === players.length){
+                                            if(i === players[0].length - 1){
                                                 res.render('games/game', {
                                                     game: game[0],
                                                     players: players[0],
@@ -224,7 +224,7 @@ app.patch('/:id', (req, res, next) => {
             }
         })
     }else {
-        throw BadRequestError('Bad Gamemode');
+        throw new BadRequestError('Bad Gamemode');
     }
 })
 
@@ -269,10 +269,13 @@ app.get('/:id/players', (req, res, next) => {
             inGamePlayers = [];
             if (players[0].length === 0){
                 await Promise.all([
-                    Player.getAllPlayers(),
+                    GamePlayer.getAvailablePlayers(),
                 ]).then(async (allplayers) => {
-                    for (a=0; a < allplayers[0].length; a++){
-                        await allPlayersNotInGame.push(allplayers[0][a]);
+                    if (allplayers[0].length > 0){
+                        console.log(allplayers[0])
+                        for (a=0; a < allplayers[0].length; a++){
+                            await allPlayersNotInGame.push(allplayers[0][a]);
+                        }
                     }
                     res.format({
                         html: () => {
@@ -294,34 +297,23 @@ app.get('/:id/players', (req, res, next) => {
                     ]).then(async (result) => {
                         await inGamePlayers.push(result[0]);
                         Promise.all([
-                            Player.getAllPlayers(),
-                        ]).then(async (allplayers) => {
-                            for (a = 0; a < allplayers[0].length; a++) {
-                                await allPlayersNotInGame.push(allplayers[0][a]);
-                            }
-                            for (p = 0; p < allPlayersNotInGame.length; p++) {
-                                for (e = 0; e < inGamePlayers.length; e++) {
-                                    if (allPlayersNotInGame[p]['id'] === inGamePlayers[e]['id']) {
-                                        console.log(allPlayersNotInGame[p])
-                                        await allPlayersNotInGame.splice(p, 1)
-                                        console.log('Player in game ')
-                                    } else {
-                                        console.log("Player not in game ")
+                            GamePlayer.getAvailablePlayers(),
+                        ]).then(async (AvailablePlayers) => {
+                            console.log(AvailablePlayers)
+                            if (i === players[0].length){
+                                res.format({
+                                    html: () => {
+                                        res.render('games/player', {
+                                            game: game[0],
+                                            inGamePlayers: inGamePlayers,
+                                            allPlayers: AvailablePlayers[0],
+                                        })
+                                    },
+                                    json: () => {
+                                        res.status(201).send(inGamePlayers);
                                     }
-                                }
+                                })
                             }
-                            res.format({
-                                html: () => {
-                                    res.render('games/player', {
-                                        game: game[0],
-                                        inGamePlayers: inGamePlayers,
-                                        allPlayers: allPlayersNotInGame,
-                                    })
-                                },
-                                json: () => {
-                                    res.status(201).send(inGamePlayers);
-                                }
-                            })
                         }).catch(next);
                     }).catch(next);
                 }
