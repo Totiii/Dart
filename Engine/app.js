@@ -39,10 +39,15 @@ async function startGame() {
 async function numberOfPlayer() {
     return await inquirer.prompt(
         {
-            'type': 'number',
-            'name': 'nbPlayers',
-            'message': 'Please set the number of players ?',
-            'default': 2
+            type: 'number',
+            name: 'nbPlayers',
+            message: 'Please set the number of players ?',
+            default: 2,
+            validate: function(value) {
+                var valid = !isNaN(parseFloat(value));
+                return valid || 'Please enter a number';
+            },
+            filter: Number
         },
     ).then((answer) => {
         let { nbPlayers } = answer;
@@ -53,10 +58,10 @@ async function numberOfPlayer() {
 async function gameMode() {
     return await inquirer.prompt(
         {
-            'type': 'list',
-            'name': 'gameMode',
-            'choices': ['World Tour', '301', 'Cricket Game'],
-            'message': 'Please select your game mode :'
+            type: 'list',
+            name: 'gameMode',
+            choices: ['World Tour', '301', 'Cricket Game'],
+            message: 'Please select your game mode :'
         }
     ).then((answer) => {
         let { gameMode } = answer;
@@ -65,19 +70,19 @@ async function gameMode() {
 }
 
 async function nameOfPlayers(nbPlayers) {
-    let nameTab = [];
+    let nameTable = [];
     for (let p = 0; p < nbPlayers; p++) {
         await inquirer.prompt(
             {
-                'type': 'input',
-                'name': 'playerName',
-                'message': `Please set the Player name of player n°${p} : `
+                type: 'input',
+                name: 'playerName',
+                message: `Please set the Player name of player n°${p} : `
             }
         ).then((answer) => {
-            nameTab.push(answer.playerName)
+            nameTable.push(answer.playerName)
         })
     }
-    return nameTab
+    return nameTable
 }
 
 startGame();
