@@ -1,6 +1,6 @@
 # DART GAME
 
-Jeu de fléchettes réalisé en node js 
+Jeu de fléchettes réalisé en node js.
 
 ## Partie API
 
@@ -40,4 +40,4 @@ Vous pouvez maintenant tester l'API sur localhost:8080 ou 127.0.0.1:8080.
   node app.js
 ```
 
-Et voilà vous pouvez maintenant jouer au jeu.
+Et voilà vous pouvez maintenant jouer au jeu sur votre terminal.
