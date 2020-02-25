@@ -19,7 +19,7 @@ Jeu de fléchettes réalisé en node js
   cd API 
   node app.js
 ```
-Vous pouvez maintenant tester' API sur localhost:8080 ou 127.0.0.1:8080
+Vous pouvez maintenant tester l'API sur localhost:8080 ou 127.0.0.1:8080.
 
 ## Partie Engine
 
@@ -39,3 +39,5 @@ Vous pouvez maintenant tester' API sur localhost:8080 ou 127.0.0.1:8080
   cd engine
   node app.js
 ```
+
+Et voilà vous pouvez maintenant jouer au jeu.
