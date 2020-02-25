@@ -22,6 +22,15 @@ module.exports = {
     },
     getAvailablePlayers: () => {
         return db.all('SELECT * FROM  Player P WHERE P.id NOT IN (SELECT Player.id FROM GamePlayer LEFT JOIN Player ON Player.id = GamePlayer.playerId WHERE GamePlayer.inGame IS TRUE )')
+    },
+    getAllGamePlayersStats: (gameId) => {
+        return db.all('SELECT * FROM  Player P WHERE P.id IN (SELECT playerId FROM GamePlayer WHERE gameId = ?)', gameId)
+    },
+    getRemainingShots: (gameId, playerId) => {
+        return db.get('SELECT remainingShots FROM  GamePlayer WHERE gameId = ? AND playerId = ?', [gameId, playerId])
+    },
+    updateRemainingShots: (gameId, playerId, remainingShots) => {
+        db.run('UPDATE GamePlayer SET remainingShots = ? WHERE playerId = ? and gameId = ?', [remainingShots, playerId, gameId])
     }
 
 

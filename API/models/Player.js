@@ -15,7 +15,7 @@ module.exports = {
         return db.get("SELECT COUNT(*) as count FROM Player")
     },
     add: (name, email, createdAt) => {
-        db.run("INSERT INTO Player (name, email, createdAt) VALUES(?,?,?)", [name, email, createdAt]);
+        db.run("INSERT INTO Player (name, email, createdAt, gameWin, gameLost) VALUES(?,?,?,0,0)", [name, email, createdAt]);
     },
     update: (id, name, email) => {
         db.run("UPDATE Player SET name = ?, email = ? where id = ?", [name, email, id]);

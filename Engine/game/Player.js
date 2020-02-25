@@ -20,6 +20,8 @@ class Player {
         })
     }
 
+
+
     async multiplierShot() {
         return await inquirer.prompt([
             {

@@ -4,7 +4,7 @@ class Game {
 
     constructor(players) {
         this.players = players;
-        this.sector = 20;
+        this.sector = 1;
         this.win = false;
     }
 
@@ -24,6 +24,7 @@ class Game {
 
     gameWin(player) {
         console.log(`The winner of the game is : ${player.name} !`);
+        console.table(this.players)
     }
 
 }

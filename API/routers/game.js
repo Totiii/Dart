@@ -8,7 +8,11 @@ const BadRequestError = require('../errors/BadRequestError');
 const NotFoundError = require('../errors/NotFoundError');
 const BadGamemode = require('../errors/BadGamemode');
 const GameNotStartable = require('../errors/GameNotStartable');
+const GameEnded = require('../errors/GameEnded');
+const GameNotStarted = require('../errors/GameNotStarted');
 const PlayersNotAddableGameStarted = require('../errors/PlayersNotAddableGameStarted');
+const WorldTour = require('../engine/gamemodes/WorldTour');
+const The301Game = require('../engine/gamemodes/The301Game');
 
 function getDateTime() {
 
@@ -67,11 +71,6 @@ app.get('/new', (req, res, next) => {
 app.post('/', (req, res, next) => {
     var name = req.body.name;
     var mode = req.body.mode;
-
-    console.log('dab')
-
-    console.log(mode)
-    console.log(name)
 
     if(mode === '301' || mode === 'around-the-world' || mode === 'cricket'){
         createdAt = getDateTime();
@@ -334,8 +333,6 @@ app.post('/:id/players', function(req, res, next) {
         playersArray = playerString;
     }
 
-    console.log(playersArray)
-
     createdAt = getDateTime();
 
     if (id != req.params.id) throw new BadRequestError('Id should be a number');
@@ -399,14 +396,37 @@ app.delete('/:id/players', (req, res, next) => {
     })
 })
 
-app.post('/:id/shots', function(req, res, next) {
+app.post('/:id/shots', async function(req, res, next) {
     const id = +req.params.id;
     const sector = req.body.sector;
     const multiplicator = req.body.multiplicator;
+    createdAt = getDateTime();
 
     if (id != req.params.id) throw new BadRequestError('Id should be a number');
 
+    await Promise.all([
+        Game.get(id),
+    ]).then(async (myGame) => {
+        if (myGame[0]['status'] === 'ended') throw new GameEnded();
+        if (myGame[0]['status'] === 'draft') throw new GameNotStarted('You need to start the game before play');
 
+        await GameShot.addShot(myGame[0]['id'], myGame[0]['currentPlayerId'], multiplicator, sector, createdAt);
+        await Promise.all([
+            await GamePlayer.getRemainingShots(myGame[0]['id'], myGame[0]['currentPlayerId'])
+        ]).then(async (remainingShots) => {
+            if (remainingShots[0]['remainingShots'] < 4 && remainingShots[0]['remainingShots'] > 0){
+                GamePlayer.updateRemainingShots(myGame[0]['id'], myGame[0]['currentPlayerId'], remainingShots[0]['remainingShots'] - 1)
+            }
+            res.format({
+                html: () => {
+                    res.redirect('../')
+                },
+                json: () => {
+                    res.status(201).send('{"code":204}' );
+                }
+            })
+        }).catch(next);
+    }).catch(next);
 });
 
 module.exports = app;

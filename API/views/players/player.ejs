@@ -8,6 +8,8 @@
 </head>
 <body>
 
+<%- include('../include/navbar'); %>
+
 <div class='container mt-5'>
     <div class='row mt-3'>
         <div class='col'>
@@ -35,7 +37,7 @@
                         <td><%= players[i].gameLost %></td>
                         <td><%= players[i].createdAt %></td>
                         <td><a class="btn btn-success" href="./players/<%= players[i].id %>" >More</a></td>
-                        <td><button class="btn btn-danger delete" data-id="<%= players[i].id %>">Delete</button>
+                          <td><button class="btn btn-danger delete" data-id="<%= players[i].id %>">Delete</button></td>
                       </tr>
                       <% } %>
                    <% } %>
