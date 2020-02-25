@@ -31,6 +31,7 @@ db.open('bdd.db').then( () => {
         db.run('CREATE TABLE if not EXISTS GameShot (id INTEGER PRIMARY KEY NOT NULL, gameId INT NOT NULL, playerId INT NOT NULL, multiplicator INT, sector  INT, createdAt DATETIME)'),
     ]).then(() => {
         console.log('Databases are ready')
+        console.log('Server running on port 8080')
     }).catch((err) => {
         console.log('Une erreur est survenue :', err)
     })
